@@ -12,4 +12,11 @@ router.post("/add",async(req,res)=>{
     })
 })
 
+router.get("/viewall",async(req,res)=>{
+    let data=await postmodel.find()
+    .populate("userId","name address -_id")
+    .exec()
+    res.json(data)
+})
+
 module.exports=router
