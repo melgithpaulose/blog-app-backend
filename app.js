@@ -3,6 +3,7 @@ const cors=require("cors")
 const mongoose=require("mongoose")
 
 const signuprouter=require("./controllers/signuprouter")
+const postrouter=require("./controllers/postrouter")
 
 const app=express()
 
@@ -13,6 +14,7 @@ mongoose.connect("mongodb+srv://melgith2002:melgith2002@cluster0.vqeinn7.mongodb
 {useNewUrlParser:true})
 
 app.use("/api/user",signuprouter)
+app.use("/api/post",postrouter)
 
 app.listen(2005,()=>{
     console.log("localhost running")
