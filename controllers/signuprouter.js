@@ -1,32 +1,65 @@
-const express=require("express")
+const express = require("express")
 
-const signupmodel=require("../models/signupmodel")
+const signupmodel = require("../models/signupmodel")
 
-const bcrypt=require("bcryptjs")
+const bcrypt = require("bcryptjs")
 
-hashPasswordGenerator=async(pass)=>{
-    const salt=await bcrypt.genSalt(10)
-    return bcrypt.hash(pass,salt)
+hashPasswordGenerator = async (pass) => {
+    const salt = await bcrypt.genSalt(10)
+    return bcrypt.hash(pass, salt)
 }
 
-const router=express.Router()
+const router = express.Router()
 
-router.post("/signup",async(req,res)=>{
+router.post("/signup", async (req, res) => {
 
-    let {data}={"data":req.body}
-    let password=data.password
-    hashPasswordGenerator(password).then(
-        (hashedPassword)=>{
-            console.log(hashedPassword)
-            data.password=hashedPassword
-            console.log(data)
-            let users=new signupmodel(data)
-            let result=users.save()
-            res.json({
-                status:"success"
-            })
-        }
-    ) 
+    let { data } = { "data": req.body }
+    let password = data.password
+    // hashPasswordGenerator(password).then(
+    //     (hashedPassword)=>{
+    //         console.log(hashedPassword)
+    //         data.password=hashedPassword
+    //         console.log(data)
+    //         let users=new signupmodel(data)
+    //         let result=users.save()
+    //         res.json({
+    //             status:"success"
+    //         })
+    //     }
+    // ) 
+    const hashedPassword = await hashPasswordGenerator(password)
+    data.password = hashedPassword
+    let users = new signupmodel(data)
+    let result =await users.save()
+    res.json({
+        status: "success"
+    })
 })
 
-module.exports=router
+router.post("/signin", async (req, res) => {
+    let input = req.body
+    let email=req.body.email
+    let data = await signupmodel.findOne({"email":email})
+    if (!data) {
+        return res.json({
+            status:"invalid user"
+        })
+    }
+    console.log(data)
+    let dbPassword=data.password
+    let inputPassword=req.body.password
+    console.log(dbPassword)
+    console.log(inputPassword)
+    const match=await bcrypt.compare(inputPassword,dbPassword)
+    if (!match) {
+        return res.json({
+            status:"invalid password"
+        })
+    }
+
+    res.json({
+        status:"success"
+    })
+})
+
+module.exports = router
